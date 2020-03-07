@@ -17,6 +17,13 @@ class App extends Component {
          operator:e.target.value
        })
      }
+     else if(e.target.value === "reset"){
+       this.setState({
+        number1:"",
+        number2:"",
+        operator:false
+       })
+     }
 
      // if button is "="
      else if(e.target.value === "=")
