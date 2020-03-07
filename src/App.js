@@ -1,71 +1,101 @@
 import React, { Component } from 'react';
-import Grid from './components/Grid';
-import Screen from "./components/Screen"
+import Button from "./components/Button"
+import "./css/style.css"
 
 class App extends Component {
-  state = {
-    number1:"",
-    number2:"",
-    operator:false
+
+  constructor(props){
+    super(props)
+    this.state = {
+      current: "",
+      previous:[],
+      nextIsReset: false
+    }
   }
 
-  onClick = (e) =>{
-    //detect if the button is an operator, this.state.operator = operator(+ or -)
-    if(e.target.value === "+" || e.target.value === "-")
-     {
-       this.setState({
-         operator:e.target.value
-       })
-     }
 
-     // if button is "="
-     else if(e.target.value === "=")
-     {
-       //if operator is + it's an addition
-       if(this.state.operator === "+")
-       {
-        this.setState({
-          number1:parseInt(this.state.number1)+parseInt(this.state.number2)
-        })
-
-        // else it's a substraction
-       }else{
-        this.setState({
-          number1:parseInt(this.state.number1)-parseInt(this.state.number2)
-        })
-       }
-
-       // I reinitialize my other state, except number1
-       this.setState({
-        operator:false,
-        number2:""
-       })
-     }
-
-     //it's not "="
-     else
-     {
-       //if operator is false I increase number1
-      if(!this.state.operator){
-        this.setState({
-          number1:this.state.number1+e.target.value.toString(2)
-        })
-       }else{
-         //else I increase number2
-        this.setState({
-          number2:this.state.number2+e.target.value.toString(2)
-        })
-       }
-     }
+  reset = () =>{
+    this.setState({
+      current:"0",
+      previous:[],
+      nextIsReset:false
+    })
   }
 
+
+  addToCurrent = (symbol) => {
+    console.log(symbol)
+
+    if(["/","-","+","*"].indexOf(symbol) > -1){
+      let {previous}=this.state
+      previous.push(this.state.current + symbol)
+      this.setState({
+        previous,
+        nextIsReset:true
+      })
+
+    }else{
+      if((this.state.current === "0" && symbol !== ".") || this.state.nextIsReset){
+        this.setState({
+          current: symbol,
+          nextIsReset: false
+        })
+      }
+      else{
+        this.setState({
+          current: this.state.current + symbol
+        })
+      }
+    }
+  }
+
+  calculate = () => {
+    let {current, previous} = this.state
+    if(previous.length > 0){
+      current = this.eval(String(previous[previous.length - 1] + current))
+      this.setState({
+        current,
+        previous: [],
+        nextIsReset:true
+      })
+    }
+  }
   render(){
+    const buttons = [
+      {symbol:"C",cols:3,action:this.reset},
+      {symbol:"/",cols:1,action:this.addToCurrent},
+      {symbol:"7",cols:1,action:this.addToCurrent},
+      {symbol:"8",cols:1,action:this.addToCurrent},
+      {symbol:"9",cols:1,action:this.addToCurrent},
+      {symbol:"*",cols:1,action:this.addToCurrent},
+      {symbol:"4",cols:1,action:this.addToCurrent},
+      {symbol:"5",cols:1,action:this.addToCurrent},
+      {symbol:"6",cols:1,action:this.addToCurrent},
+      {symbol:"-",cols:1,action:this.addToCurrent},
+      {symbol:"1",cols:1,action:this.addToCurrent},
+      {symbol:"2",cols:1,action:this.addToCurrent},
+      {symbol:"3",cols:1,action:this.addToCurrent},
+      {symbol:"+",cols:1,action:this.addToCurrent},
+      {symbol:"0",cols:1,action:this.addToCurrent},
+      {symbol:".",cols:1,action:this.addToCurrent},
+      {symbol:"=",cols:2,action:this.calculate},
+    ]
     return (
       <div className="App">
-       <h3>Calculator</h3>
-       <Grid onClick={this.onClick}/>
-       <Screen number1={this.state.number1} number2={this.state.number2} operator={this.state.operator}/>
-      </div>
+        {
+          this.state.previous.length > 0 ?
+          <div className="floaty-last">{this.state.previous[this.state.previous.length - 1]}</div>
+          : null
+
+
+        }
+        <input type="text" defaultValue={this.state.current} className="result"/>
+        {
+          buttons.map((btn,index) => {
+            return <Button key={index} symbol={btn.symbol} cols={btn.cols} action={(symbol)=>btn.action(symbol)}/>
+          })
+        }
+      </div>    
     )
   }
 }
